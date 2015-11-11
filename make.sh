@@ -14,14 +14,15 @@
 #
 
 IOSMIN="7.0";
+PWDDIR=`pwd`;
 BUILDDIR="build";
 OUTDIR="out";
-PREFIX=`pwd`"/$OUTDIR/usr";
+PREFIX="$PWDDIR/$OUTDIR/usr";
 CUST_CONFIG="ENDIANESS=LIBNET_LIL_ENDIAN ac_cv_libnet_endianess=lil ac_libnet_have_packet_socket=no ac_cv_libnet_linux_procfs=no ac_cv_lbl_unaligned_fail=no";
 CUST_CFLAGS="";
 CUST_CXXFLAGS="";
 CUST_LDFLAGS="";
- 
+
 if [ $# != 1 ] ; then
     echo "USAGE: $0 file(tar.gz code file)!";
     exit 1;
@@ -46,6 +47,7 @@ ARCH="-arch armv7 -arch armv7s -arch arm64";
 
 INCLUDES="\
     -I$SDKROOT/usr/include \
+    -I$PWDDIR/$BUILDDIR/include \
 ";
 
 LIBS="\
@@ -93,7 +95,7 @@ make distclean;
     LDFLAGS="$LDFLAGS $CUST_LDFLAGS" \
 ;
 
-mkdir include/netinet;
+mkdir -p include/netinet;
 cp `xcrun --sdk iphonesimulator --show-sdk-path`/usr/include/netinet/udp.h \
     include/netinet/ \
 ;
