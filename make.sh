@@ -1,27 +1,42 @@
 #!/bin/bash
 
+#
+# by idotce (idotce@gmail.com)
+#
 # https://ares.lids.mit.edu/redmine/projects/forest-game/wiki/Building_sigc++_for_iOS
 # https://gist.github.com/idotce/be94b667b40ed694d006
+#
 # xcode-select --install
+#
 # "/Applications/Xcode.app/Contents/Developer"
 # "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer"
 # "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
+#
 
 IOSMIN="7.0";
-PREFIX=`pwd`"/out/usr";
+BUILDDIR="build";
+OUTDIR="out";
+PREFIX=`pwd`"/$OUTDIR/usr";
 CUST_CONFIG="ENDIANESS=LIBNET_LIL_ENDIAN ac_cv_libnet_endianess=lil ac_libnet_have_packet_socket=no ac_cv_libnet_linux_procfs=no ac_cv_lbl_unaligned_fail=no";
 CUST_CFLAGS="";
 CUST_CXXFLAGS="";
 CUST_LDFLAGS="";
-
+ 
 if [ $# != 1 ] ; then
-    echo "USAGE: $0 directory"
-    exit 1
-else
-    rm -rf $PREFIX
-    mkdir -p $PREFIX
-    cd $1
+    echo "USAGE: $0 file(tar.gz code file)!";
+    exit 1;
 fi
+
+if [ ! -f $1 ] ; then
+    echo "ERROR: File $1 not found!";
+    exit 1;
+fi
+
+rm -rf $BUILDDIR; mkdir $BUILDDIR;
+rm -rf $OUTDIR; mkdir $OUTDIR;
+rm -rf $PREFIX; mkdir -p $PREFIX;
+tar xvf $1;
+cd $BUILDDIR;
 
 DEVROOT=`xcode-select -p`;
 SDKROOT=`xcrun --sdk iphoneos --show-sdk-path`;
@@ -65,9 +80,9 @@ LDFLAGS="\
 CC="${BINROOT}/gcc";
 CXX="${BINROOT}/g++";
 
-make distclean
+make distclean;
 
-./configure \
+../${1%.*.*}/configure \
     $CUST_CONFIG \
     --prefix="$PREFIX" \
     --host=arm-apple-darwin \
@@ -78,6 +93,10 @@ make distclean
     LDFLAGS="$LDFLAGS $CUST_LDFLAGS" \
 ;
 
-make
-make install
-cd ..
+mkdir include/netinet;
+cp `xcrun --sdk iphonesimulator --show-sdk-path`/usr/include/netinet/udp.h \
+    include/netinet/ \
+;
+
+make -j4; make install;
+cd ..;
